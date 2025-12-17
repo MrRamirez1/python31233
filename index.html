@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Python Тест</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 850px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    #setup, #quiz, #result {
+      margin-top: 20px;
+      text-align: center;
+    }
+    #quiz, #result { display: none; }
+    .question {
+      background: white;
+      padding: 16px;
+      margin: 15px 0;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+    .question-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+      font-size: 16px;
+    }
+    .option {
+      padding: 10px 15px;
+      margin: 6px 0;
+      background: #e9ecef;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 16px; /* предотвращает масштаб на iOS */
+    }
+    .option:hover {
+      background: #dee2e6;
+    }
+    .option.correct {
+      background-color: #d4edda !important;
+      border-color: #28a745;
+      color: #155724;
+    }
+    .option.incorrect {
+      background-color: #f8d7da !important;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+    button {
+      padding: 10px 16px;
+      margin: 6px;
+      font-size: 14px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    #quiz-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #result {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Тест по Python</h1>
+
+  <div id="setup">
+    <p><b>Выберите набор вопросов:</b></p>
+    <div class="btn-group">
+      <button onclick="startQuiz('first', 20)">Первые 20 (случайно)</button>
+      <button onclick="startQuiz('first', 50)">Первые 50 (случайно)</button>
+      <button onclick="startQuiz('first', 100)">Первые 100 (случайно)</button>
+      <button onclick="startQuiz('random', 20)">Случайные 20</button>
+      <button onclick="startQuiz('random', 50)">Случайные 50</button>
+      <button onclick="startQuiz('random', 100)">Случайные 100</button>
+    </div>
+  </div>
+
+  <div id="quiz">
+    <div id="question-container"></div>
+    <div id="quiz-controls">
+      <button id="next-btn" style="display:none;">Следующий вопрос</button>
+      <button id="finish-btn">Завершить тест</button>
+    </div>
+  </div>
+
+  <div id="result">
+    <h2>Тест завершён!</h2>
+    <p>Правильных ответов: <span id="score"></span> из <span id="total"></span></p>
+    <p>Процент: <span id="percent"></span>%</p>
+    <button onclick="location.reload()">Начать заново</button>
+  </div>
+
+  <script>
+    // —————————————————————————————————————
+    // ВСЕ ВОПРОСЫ (50 шт.)
+    // —————————————————————————————————————
+    const rawText = `
+1 Как вычислить количество дней между двумя датами?
+- [ ] date_difference()
+- [ ] date_diff()
+- [ ] datetime.diff()
+- [+] (date1 - date2).days
+- [ ] timedelta.days()
+2 Что выведет данный код? ( —-> это отступ)
+x=5
+while x>=0:
+—-> x=1
+print(x)
+- [ ] 0
+- [ ] -1
+- [+] 1
+- [ ] 6
+- [ ] 5
+3 Укажите, значение переменной i после выполнения данного фрагмента программы (---> это отступ):
+i=1
+while i<=10:
+---> i=i+1
+- [ ] 1
+- [ ] 10
+- [+] 11
+- [ ] 0
+4 Списки. Что выведет данный код? ( ---> это отступ)
+a=[-1, 1]
+for i in a:
+---> print(i, end="")
+- [ ] 0 1
+- [ ] 1 -1
+- [ ] [-1, 1]
+- [+] -1 1
+- [ ] 0
+5 От какого базового класса наследуются все виджеты в PyQt5?
+- [ ] QGuiApplication
+- [ ] QApplication
+- [+] QWidget
+- [ ] QVBoxLayout
+6 Что выведет данный код? ( ---> это отступ)
+b=[0, 1, 3, 4]
+for i in b:
+---> if i==3:
+--- ---> continue
+---> else:
+--- ---> print(i, end="")
+- [ ] 8
+- [ ] 0134
+- [ ] 3
+- [ ] 4
+- [+] 014
+7 Как создать словарь в Python 3?
+- [ ] tuple()
+- [+] dict()
+- [ ] set()
+- [ ] list()
+- [+] {}
+8 Как разделить строку на подстроки по определенному разделителю?
+- [ ] str.divide(separator)
+- [ ] str.slice(separator)
+- [+] str.split(separator)
+- [ ] str.out(separator)
+- [ ] str.separate(separator)
+9 Какой класс используется для работы с компоновкой элементов в PyQt5?
+- [ ] QRenderLayout
+- [ ] QLayoutManager
+- [ ] QGuiApplication
+- [+] QHBoxLayout
+10 Что выведет данный код?  
+a="spam"  
+print(a[:])  
+- [ ] s  
+- [ ] sp am  
+- [ ] 5  
+- [ ] sm  
+- [+] spam
+11 Какие ошибки допущены в коде ниже? ( ---> это отступ)  
+def factorial(n):  
+---> if n == 0:  
+---> return 1  
+---> else:  
+---> return n * factorial(n - 1)  
+print(factorial(5))  
+- [ ] Функция всегда будет возвращать 1  
+- [ ] Функция не может вызывать сама себя  
+- [ ] Необходимо указать тип возвращаемого значения  
+- [+] В коде нет никаких ошибок
+12 Списки. Что выведет данный код?  
+a=[2, 4, 8, 10, 12, 14]  
+print(a[::2])  
+- [ ] [4, 10, 14]  
+- [+] [2, 8, 12]  
+- [ ] [2, 4, 8, 10, 12, 14]  
+- [ ] [6]
+13 Что будет в результате выполнения программы:
+a=5
+b=a+5
+a=b*10
+print(a)
+- [ ] 250
+- [ ] 1000
+- [ ] 25
+- [ ] 5
+- [+] 100
+14 Множества. Что выведет данный код?  
+a=set([1, 3])  
+print(len(a))  
+- [ ] 3  
+- [ ] 4  
+- [ ] 1, 3  
+- [+] 2  
+- [ ] {1, 3}
+15 Встроенный метод списка remove() используется для:
+- [ ] извлечения первого элемента списка с указанным значением  
+- [ ] удаления последнего элемента списка с указанным значением  
+- [+] удаления первого элемента списка с указанным значением  
+- [ ] удаления элемента списка с указанным индексом  
+- [ ] удаления всех элементов списка с указанным значением
+16 Как перевести строку в верхний регистр?
+- [ ] str.capital()
+- [+] str.upper()
+- [ ] str.to_lower()
+- [ ] str.to_upper()
+- [ ] str.lowercase()
+17 Как найти индекс первого вхождения подстроки в строке?
+- [ ] str.detect(substring)
+- [ ] str.index(substring)
+- [+] str.find(substring)
+- [ ] str.search(substring)
+- [ ] str.lookup(substring)
+18 Списки. Что выведет данный код?
+a=list('alser')
+print(a)
+- [ ] ['alser']
+- [+] ['a', 'l', 's', 'e', 'r']
+- [ ] ['a']
+- [ ] alser
+- [ ] 5
+19 Как получить дату через неделю от текущей даты?
+- [ ] datetime.today() + timedelta(days=7)
+- [ ] datetime.now() + timedelta(7)
+- [ ] datetime.today() + timedelta(7)
+- [ ] datetime.now() - timedelta(days=7)
+- [+] datetime.now() + timedelta(days=7)
+20 Что выведет данный код? ( ---> это отступ)
+for i in "Jhon":
+---> if i=='o':
+---> continue
+---> print(i, end=',')
+- [ ] 4
+- [ ] ….
+- [+] J,h,n,
+- [ ] o,
+- [ ] J,h,o,n,
+21 Как создать новый файл в Python 3?
+- [ ] os.new_file(file_path)
+- [ ] os.touch(file_path)
+- [ ] os.create_file(file_path)
+- [ ] os.make_file(file_path)
+- [ ] os.add_file(file_path)
+22 Списки. Что выведет данный код?  
+a=['1', '2']  
+a.extend(list('34'))  
+print(a)  
+- [ ] ['3', '4']  
+- [ ] 10  
+- [ ] ['1', '2', '34']  
+- [+] ['1', '2', '3', '4']  
+- [ ] ['1', '2']
+23 Множества. Что выведет данный код?  
+a=set([1, 3])  
+a.add(3)  
+print(a)  
+- [ ] (3)  
+- [ ] (1)  
+- [ ] 7  
+- [ ] {1, 3, 3}  
+- [+] {1, 3}
+24 Оператор continue используется
+- [ ] для выхода из цикла
+- [ ] для возврата из функции и продолжения программы с точки ее вызова
+- [+] для перехода к следующей итерации цикла
+- [ ] в качестве пустого оператора
+25 Как создать список, содержащий числа от 1 до 10?
+- [ ] list(1:10)
+- [ ] list(1, 10)
+- [ ] [1, 10]
+- [+] list(range(1, 11))
+- [ ] list[1:10]
+26 Какой файл требуется для подключения, созданного в Qt Designer, скомпилированного пользовательского интерфейса в PyQt5?
+- [ ] .xml
+- [ ] .py
+- [+] .ui
+- [ ] .qml
+27 Что выведет данный код? ( ---> это отступ)
+for i in 'test':
+---> if i=='t':
+--- ---> print(i, end="")
+- [ ] test
+- [ ] 2
+- [+] tt
+- [ ] es
+- [ ] 4
+28 Что будет показано в результате?  
+name = "John"  
+print('Hi, %s' % name)
+- [ ] Ошибка  
+- [ ] "Hi, name"  
+- [ ] "Hi, "  
+- [+] "Hi, John"
+29 Что выведет следующая программа (—-> это отступ):
+S = 1
+for i in range(1, 10):
+---> if i % 2 == 0:
+--- --> S = S * i
+print(S)
+- [ ] 14
+- [ ] 10
+- [ ] 362880
+- [+] 384
+30 Списки. Что выведет данный код?  
+a=[1]  
+a.append("py")  
+print(a)  
+- [ ] [1, 'p', 'y']  
+- [ ] ['py', 1]  
+- [+] [1, 'py']  
+- [ ] [1, 'p', 'y']
+31 Как изменить формат вывода даты и времени?
+- [ ] time_format()
+- [ ] strptime()
+- [+] strftime()
+- [ ] datetime_format()
+- [ ] date_format()
+32 Как добавить элемент в конец списка?
+- [ ] insert()
+- [ ] extend()
+- [+] append()
+- [ ] add()
+- [ ] push()
+33 Что будет выведено следующей программой:
+a = 7  
+b = 9  
+a, b = b, a  
+print(a, b, a)  
+- [ ] 16916  
+- [ ] 999  
+- [ ] 979  
+- [ ] 777  
+- [+] 797
+34 Как создать новый каталог в Python 3?
+- [ ] os.make_dir(dir_path)
+- [ ] os.add_dir(dir_path)
+- [+] os.mkdir(dir_path)
+- [ ] os.create_dir(dir_path)
+- [ ] os.newdir(dir_path)
+35 Что будет выведено на экран монитора в результате выполнения программы:
+z=5  
+z1=z**2  
+print(z1)
+- [ ] 125  
+- [ ] 10  
+- [ ] 5  
+- [+] 25
+36 Что выведет данный код?
+x='test'
+y=4
+print(y+x)
+- [ ] 4test
+- [ ] 4+test
+- [ ] testtesttesttest
+- [ ] ytest
+- [ ] testy
+37 Что выведет данный код?  
+for x in range(3):  
+    print(x)
+- [ ] 3  
+- [ ] 0  
+- [ ] 2  
+- [+] 0  
+      1  
+      2  
+- [ ] 0  
+      1  
+      2  
+      3
+38 Что выведет следующая программа (⟶ это отступ):
+S = 0
+for i in range(1, 10, 2):
+⟶ if i % 2 == 0:
+⟶ ⟶ S = S + i
+print(S)
+- [+] 0  
+- [ ] 1  
+- [ ] 10  
+- [ ] 20
+39 Выберите правильную запись оператора присваивания:
+- [ ] 10 = x
+- [+] y = 7.8
+- [+] a = b + x
+- [+] a = 5
+40 Что будет в результате выполнения программы: Входные данные: a=10, b=20 (——> это отступ)?  
+a=int(input())  
+b=int(input())  
+if a<b:  
+——> print(a)  
+else:  
+——> print(b)  
+- [ ] 30  
+- [ ] -10  
+- [ ] 20  
+- [+] 10
+41 Списки. Что выведет данный код?  
+a=[5, 10, 2, 0]  
+a.sort()  
+print(a)  
+- [ ] 10  
+- [ ] [10, 5, 2, 0]  
+- [ ] 17  
+- [ ] 0  
+- [+] [0, 2, 5, 10]
+42 Что выведет данный код?  
+a="spam"  
+print(a[2])  
+- [ ] 5  
+- [ ] p  
+- [ ] sp  
+- [ ] spam  
+- [+] a
+43 Какой метод класса QWidget используется для отображения виджета на экране?
+- [ ] paint()
+- [ ] display()
+- [ ] render()
+- [+] show()
+44 Что выведет данный код?  
+a="spam"  
+print(a[-3])  
+- [ ] spa  
+- [+] p  
+- [ ] s  
+- [ ] pam  
+- [ ] a
+45 Как удалить пробелы в начале и в конце строки?
+- [ ] str.out()
+- [ ] str.trim()
+- [ ] str.erase()
+- [+] str.strip()
+- [ ] str.clean()
+46 Словари. Что выведет данный код?  
+a={1: 2}  
+print(a[1])  
+- [ ] 12  
+- [ ] 3  
+- [ ] 1  
+- [+] 2  
+- [ ] 12
+47 Переменная float:
+- [+] вещественная переменная
+- [ ] логическая переменная
+- [ ] целая переменная
+48 Множества. Что выведет данный код?  
+a=[1, 2, 1, 1]  
+print(set(a))  
+- [+] {1, 2}  
+- [ ] {1, 2, 1, 1}  
+- [ ] 1211  
+- [ ] 5  
+- [ ] 4
+49 Кортежи. Что выведет данный код? (——> это отступ)
+for i in tuple([1, 2]):
+——> print(i, end="")
+else:
+——> print(0)
+- [ ] 12
+- [ ] 0
+- [+] 120
+- [ ] 2
+50 Какого типа значение получится в результате вычисления следующего выражения:  
+( ' ', )
+- [+] tuple (кортеж)  
+- [ ] это синтаксическая ошибка  
+- [ ] str (строка)  
+- [ ] unicode (Unicode-строка)
+`;
+
+    // —————————————————————————————————————
+    // ПАРСЕР ВОПРОСОВ
+    // —————————————————————————————————————
+    function parseQuestions(text) {
+      const lines = text.trim().split('\n');
+      const questions = [];
+      let current = null;
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+
+        if (/^\d+\s/.test(line)) {
+          if (current) questions.push(current);
+          const idxEnd = line.indexOf(' ');
+          const qText = line.slice(idxEnd).trim();
+          current = { text: qText, options: [], correctIndices: [] };
+        } else if (line.startsWith('- [+]') || line.startsWith('- [ ]')) {
+          const isCorrect = line.startsWith('- [+]');
+          const cleanLine = line.replace(/^- \[[+\] ]\]/, '').trim();
+          if (current) {
+            const index = current.options.length;
+            current.options.push(cleanLine);
+            if (isCorrect) {
+              current.correctIndices.push(index);
+            }
+          }
+        } else if (current && current.options.length === 0 && !line.startsWith('-')) {
+          current.text += '\n' + line;
+        }
+      }
+      if (current) questions.push(current);
+      return questions.filter(q => q.correctIndices.length > 0 && q.options.length > 0);
+    }
+
+    const allQuestions = parseQuestions(rawText);
+
+    // —————————————————————————————————————
+    // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+    // —————————————————————————————————————
+    let selectedQuestions = [];
+    let currentQuestionIndex = 0;
+    let correctAnswers = 0;
+    let userAnswers = [];
+    let autoAdvanceTimer = null;
+
+    // —————————————————————————————————————
+    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // —————————————————————————————————————
+    function shuffle(array) {
+      return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz(type, count) {
+      let selected = [];
+      if (type === 'first') {
+        selected = shuffle(allQuestions.slice(0, Math.min(count, allQuestions.length)));
+      } else {
+        selected = shuffle([...allQuestions]).slice(0, count);
+      }
+
+      selectedQuestions = selected;
+      currentQuestionIndex = 0;
+      correctAnswers = 0;
+      userAnswers = new Array(selected.length).fill(false);
+
+      document.getElementById('setup').style.display = 'none';
+      document.getElementById('quiz').style.display = 'block';
+      document.getElementById('result').style.display = 'none';
+
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (currentQuestionIndex >= selectedQuestions.length) {
+        showResult();
+        return;
+      }
+
+      clearInterval(autoAdvanceTimer);
+      document.getElementById('next-btn').style.display = 'none';
+
+      const q = selectedQuestions[currentQuestionIndex];
+      const container = document.getElementById('question-container');
+      container.innerHTML = `
+        <div class="question">
+          <div class="question-title">${currentQuestionIndex + 1}. ${q.text}</div>
+          <div class="options"></div>
+        </div>
+      `;
+
+      const opts = container.querySelector('.options');
+      const correctSet = new Set(q.correctIndices);
+
+      q.options.forEach((opt, i) => {
+        const el = document.createElement('div');
+        el.className = 'option';
+        el.textContent = opt;
+        el.onclick = () => {
+          if (userAnswers[currentQuestionIndex]) return;
+
+          // Подсветка всех правильных
+          q.correctIndices.forEach(idx => {
+            opts.children[idx]?.classList.add('correct');
+          });
+
+          // Подсветка выбранного
+          if (correctSet.has(i)) {
+            el.classList.add('correct');
+            correctAnswers++;
+          } else {
+            el.classList.add('incorrect');
+          }
+
+          userAnswers[currentQuestionIndex] = true;
+          document.getElementById('next-btn').style.display = 'inline-block';
+
+          // Автопереход через 3 сек
+          autoAdvanceTimer = setTimeout(nextQuestion, 3000);
+        };
+        opts.appendChild(el);
+      });
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      showQuestion();
+    }
+
+    function showResult() {
+      document.getElementById('quiz').style.display = 'none';
+      const total = selectedQuestions.length;
+      const percent = Math.round((correctAnswers / total) * 100);
+
+      document.getElementById('score').textContent = correctAnswers;
+      document.getElementById('total').textContent = total;
+      document.getElementById('percent').textContent = percent;
+
+      document.getElementById('result').style.display = 'block';
+    }
+
+    // —————————————————————————————————————
+    // НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ
+    // —————————————————————————————————————
+    document.getElementById('next-btn').onclick = nextQuestion;
+    document.getElementById('finish-btn').onclick = showResult;
+  </script>
+</body>
+</html>
+
