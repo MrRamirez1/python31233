@@ -12,18 +12,18 @@
       padding: 20px;
       background-color: #f8f9fa;
     }
-    h1 {
+    h1, h2 {
       text-align: center;
       color: #2c3e50;
     }
-    #setup, #quiz, #result {
+    #setup, #quiz-container, #result {
       margin-top: 20px;
       text-align: center;
     }
-    #quiz, #result { display: none; }
+    #quiz-container, #result { display: none; }
     .question {
       background: white;
-      padding: 16px;
+      padding: 20px;
       margin: 15px 0;
       border-radius: 8px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.1);
@@ -31,7 +31,7 @@
     }
     .question-title {
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       white-space: pre-wrap;
       font-size: 16px;
     }
@@ -43,7 +43,6 @@
       border-radius: 5px;
       cursor: pointer;
       transition: all 0.2s;
-      font-size: 16px; /* предотвращает масштаб на iOS */
     }
     .option:hover {
       background: #dee2e6;
@@ -75,19 +74,24 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 8px;
     }
-    #quiz-controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
+    #next-btn {
+      display: none;
     }
-    #result {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    .review-item {
+      text-align: left;
+      background: #fff;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border-left: 4px solid #28a745;
+    }
+    .review-item.incorrect {
+      border-left-color: #dc3545;
+    }
+    .review-correct {
+      color: #155724;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -98,129 +102,135 @@
   <div id="setup">
     <p><b>Выберите набор вопросов:</b></p>
     <div class="btn-group">
-      <button onclick="startQuiz('first', 20)">Первые 20 (случайно)</button>
-      <button onclick="startQuiz('first', 50)">Первые 50 (случайно)</button>
-      <button onclick="startQuiz('first', 100)">Первые 100 (случайно)</button>
+      <button onclick="startQuiz('first', 20)">Первые 20</button>
+      <button onclick="startQuiz('first', 50)">Первые 50</button>
+      <button onclick="startQuiz('first', 100)">Первые 100</button>
+      <button onclick="startQuiz('first', 112)">Все 112</button>
       <button onclick="startQuiz('random', 20)">Случайные 20</button>
       <button onclick="startQuiz('random', 50)">Случайные 50</button>
       <button onclick="startQuiz('random', 100)">Случайные 100</button>
     </div>
   </div>
 
-  <div id="quiz">
-    <div id="question-container"></div>
-    <div id="quiz-controls">
-      <button id="next-btn" style="display:none;">Следующий вопрос</button>
-      <button id="finish-btn">Завершить тест</button>
-    </div>
+  <div id="quiz-container">
+    <div id="current-question"></div>
+    <button id="next-btn" onclick="nextQuestion()">Далее</button>
   </div>
 
-  <div id="result">
-    <h2>Тест завершён!</h2>
-    <p>Правильных ответов: <span id="score"></span> из <span id="total"></span></p>
-    <p>Процент: <span id="percent"></span>%</p>
-    <button onclick="location.reload()">Начать заново</button>
-  </div>
+  <div id="result"></div>
 
   <script>
     // —————————————————————————————————————
-    // ВСЕ ВОПРОСЫ (50 шт.)
+    // ВСЕ 112 ВОПРОСОВ
     // —————————————————————————————————————
     const rawText = `
-1 Как вычислить количество дней между двумя датами?
+1. Как вычислить количество дней между двумя датами?
 - [ ] date_difference()
 - [ ] date_diff()
 - [ ] datetime.diff()
 - [+] (date1 - date2).days
 - [ ] timedelta.days()
-2 Что выведет данный код? ( —-> это отступ)
+
+2. Что выведет данный код?
 x=5
 while x>=0:
-—-> x=1
+    x=1
 print(x)
 - [ ] 0
 - [ ] -1
 - [+] 1
 - [ ] 6
 - [ ] 5
-3 Укажите, значение переменной i после выполнения данного фрагмента программы (---> это отступ):
+
+3. Укажите значение переменной i после выполнения данного фрагмента программы:
 i=1
 while i<=10:
----> i=i+1
+    i=i+1
 - [ ] 1
 - [ ] 10
 - [+] 11
 - [ ] 0
-4 Списки. Что выведет данный код? ( ---> это отступ)
+
+4. Списки. Что выведет данный код?
 a=[-1, 1]
 for i in a:
----> print(i, end="")
+    print(i, end="")
 - [ ] 0 1
 - [ ] 1 -1
 - [ ] [-1, 1]
 - [+] -1 1
 - [ ] 0
-5 От какого базового класса наследуются все виджеты в PyQt5?
+
+5. От какого базового класса наследуются все виджеты в PyQt5?
 - [ ] QGuiApplication
 - [ ] QApplication
 - [+] QWidget
 - [ ] QVBoxLayout
-6 Что выведет данный код? ( ---> это отступ)
+
+6. Что выведет данный код?
 b=[0, 1, 3, 4]
 for i in b:
----> if i==3:
---- ---> continue
----> else:
---- ---> print(i, end="")
+    if i==3:
+        continue
+    else:
+        print(i, end="")
 - [ ] 8
 - [ ] 0134
 - [ ] 3
 - [ ] 4
 - [+] 014
-7 Как создать словарь в Python 3?
+
+7. Как создать словарь в Python 3?
 - [ ] tuple()
 - [+] dict()
 - [ ] set()
 - [ ] list()
 - [+] {}
-8 Как разделить строку на подстроки по определенному разделителю?
+
+8. Как разделить строку на подстроки по определенному разделителю?
 - [ ] str.divide(separator)
 - [ ] str.slice(separator)
 - [+] str.split(separator)
 - [ ] str.out(separator)
 - [ ] str.separate(separator)
-9 Какой класс используется для работы с компоновкой элементов в PyQt5?
+
+9. Какой класс используется для работы с компоновкой элементов в PyQt5?
 - [ ] QRenderLayout
 - [ ] QLayoutManager
 - [ ] QGuiApplication
 - [+] QHBoxLayout
-10 Что выведет данный код?  
-a="spam"  
-print(a[:])  
-- [ ] s  
-- [ ] sp am  
-- [ ] 5  
-- [ ] sm  
+
+10. Что выведет данный код?
+a="spam"
+print(a[:])
+- [ ] s
+- [ ] sp am
+- [ ] 5
+- [ ] sm
 - [+] spam
-11 Какие ошибки допущены в коде ниже? ( ---> это отступ)  
-def factorial(n):  
----> if n == 0:  
----> return 1  
----> else:  
----> return n * factorial(n - 1)  
-print(factorial(5))  
-- [ ] Функция всегда будет возвращать 1  
-- [ ] Функция не может вызывать сама себя  
-- [ ] Необходимо указать тип возвращаемого значения  
+
+11. Какие ошибки допущены в коде ниже?
+def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n - 1)
+
+print(factorial(5))
+- [ ] Функция всегда будет возвращать 1
+- [ ] Функция не может вызывать сама себя
+- [ ] Необходимо указать тип возвращаемого значения
 - [+] В коде нет никаких ошибок
-12 Списки. Что выведет данный код?  
-a=[2, 4, 8, 10, 12, 14]  
-print(a[::2])  
-- [ ] [4, 10, 14]  
-- [+] [2, 8, 12]  
-- [ ] [2, 4, 8, 10, 12, 14]  
+
+12. Списки. Что выведет данный код?
+a=[2, 4, 8, 10, 12, 14]
+print(a[::2])
+- [ ] [4, 10, 14]
+- [+] [2, 8, 12]
+- [ ] [2, 4, 8, 10, 12, 14]
 - [ ] [6]
-13 Что будет в результате выполнения программы:
+
+13. Что будет в результате выполнения программы:
 a=5
 b=a+5
 a=b*10
@@ -230,33 +240,38 @@ print(a)
 - [ ] 25
 - [ ] 5
 - [+] 100
-14 Множества. Что выведет данный код?  
-a=set([1, 3])  
-print(len(a))  
-- [ ] 3  
-- [ ] 4  
-- [ ] 1, 3  
-- [+] 2  
+
+14. Множества. Что выведет данный код?
+a=set([1, 3])
+print(len(a))
+- [ ] 3
+- [ ] 4
+- [ ] 1, 3
+- [+] 2
 - [ ] {1, 3}
-15 Встроенный метод списка remove() используется для:
-- [ ] извлечения первого элемента списка с указанным значением  
-- [ ] удаления последнего элемента списка с указанным значением  
-- [+] удаления первого элемента списка с указанным значением  
-- [ ] удаления элемента списка с указанным индексом  
+
+15. Встроенный метод списка remove() используется для:
+- [ ] извлечения первого элемента списка с указанным значением
+- [ ] удаления последнего элемента списка с указанным значением
+- [+] удаления первого элемента списка с указанным значением
+- [ ] удаления элемента списка с указанным индексом
 - [ ] удаления всех элементов списка с указанным значением
-16 Как перевести строку в верхний регистр?
+
+16. Как перевести строку в верхний регистр?
 - [ ] str.capital()
 - [+] str.upper()
 - [ ] str.to_lower()
 - [ ] str.to_upper()
 - [ ] str.lowercase()
-17 Как найти индекс первого вхождения подстроки в строке?
+
+17. Как найти индекс первого вхождения подстроки в строке?
 - [ ] str.detect(substring)
 - [ ] str.index(substring)
 - [+] str.find(substring)
 - [ ] str.search(substring)
 - [ ] str.lookup(substring)
-18 Списки. Что выведет данный код?
+
+18. Списки. Что выведет данный код?
 a=list('alser')
 print(a)
 - [ ] ['alser']
@@ -264,133 +279,157 @@ print(a)
 - [ ] ['a']
 - [ ] alser
 - [ ] 5
-19 Как получить дату через неделю от текущей даты?
+
+19. Как получить дату через неделю от текущей даты?
 - [ ] datetime.today() + timedelta(days=7)
 - [ ] datetime.now() + timedelta(7)
 - [ ] datetime.today() + timedelta(7)
 - [ ] datetime.now() - timedelta(days=7)
 - [+] datetime.now() + timedelta(days=7)
-20 Что выведет данный код? ( ---> это отступ)
+
+20. Что выведет данный код?
 for i in "Jhon":
----> if i=='o':
----> continue
----> print(i, end=',')
+    if i=='o':
+        continue
+    print(i, end=',')
 - [ ] 4
 - [ ] ….
 - [+] J,h,n,
 - [ ] o,
 - [ ] J,h,o,n,
-21 Как создать новый файл в Python 3?
+
+21. Как создать новый файл в Python 3?
 - [ ] os.new_file(file_path)
 - [ ] os.touch(file_path)
 - [ ] os.create_file(file_path)
 - [ ] os.make_file(file_path)
 - [ ] os.add_file(file_path)
-22 Списки. Что выведет данный код?  
-a=['1', '2']  
-a.extend(list('34'))  
-print(a)  
-- [ ] ['3', '4']  
-- [ ] 10  
-- [ ] ['1', '2', '34']  
-- [+] ['1', '2', '3', '4']  
+
+22. Списки. Что выведет данный код?
+a=['1', '2']
+a.extend(list('34'))
+print(a)
+- [ ] ['3', '4']
+- [ ] 10
+- [ ] ['1', '2', '34']
+- [+] ['1', '2', '3', '4']
 - [ ] ['1', '2']
-23 Множества. Что выведет данный код?  
-a=set([1, 3])  
-a.add(3)  
-print(a)  
-- [ ] (3)  
-- [ ] (1)  
-- [ ] 7  
-- [ ] {1, 3, 3}  
+
+23. Множества. Что выведет данный код?
+a=set([1, 3])
+a.add(3)
+print(a)
+- [ ] (3)
+- [ ] (1)
+- [ ] 7
+- [ ] {1, 3, 3}
 - [+] {1, 3}
-24 Оператор continue используется
+
+24. Оператор continue используется
 - [ ] для выхода из цикла
 - [ ] для возврата из функции и продолжения программы с точки ее вызова
 - [+] для перехода к следующей итерации цикла
 - [ ] в качестве пустого оператора
-25 Как создать список, содержащий числа от 1 до 10?
+
+25. Как создать список, содержащий числа от 1 до 10?
 - [ ] list(1:10)
 - [ ] list(1, 10)
 - [ ] [1, 10]
 - [+] list(range(1, 11))
 - [ ] list[1:10]
-26 Какой файл требуется для подключения, созданного в Qt Designer, скомпилированного пользовательского интерфейса в PyQt5?
+
+26. Какой файл требуется для подключения, созданного в Qt Designer, скомпилированного пользовательского интерфейса в PyQt5?
 - [ ] .xml
 - [ ] .py
 - [+] .ui
 - [ ] .qml
-27 Что выведет данный код? ( ---> это отступ)
+
+27. Что выведет данный код?
 for i in 'test':
----> if i=='t':
---- ---> print(i, end="")
+    if i=='t':
+        print(i, end="")
 - [ ] test
 - [ ] 2
 - [+] tt
 - [ ] es
 - [ ] 4
-28 Что будет показано в результате?  
-name = "John"  
+
+28. Что будет показано в результате?
+name = "John"
 print('Hi, %s' % name)
-- [ ] Ошибка  
-- [ ] "Hi, name"  
-- [ ] "Hi, "  
+- [ ] Ошибка
+- [ ] "Hi, name"
+- [ ] "Hi, "
 - [+] "Hi, John"
-29 Что выведет следующая программа (—-> это отступ):
+
+29. Что выведет следующая программа:
 S = 1
 for i in range(1, 10):
----> if i % 2 == 0:
---- --> S = S * i
+    if i % 2 == 0:
+        S = S * i
 print(S)
 - [ ] 14
 - [ ] 10
 - [ ] 362880
 - [+] 384
-30 Списки. Что выведет данный код?  
-a=[1]  
-a.append("py")  
-print(a)  
-- [ ] [1, 'p', 'y']  
-- [ ] ['py', 1]  
-- [+] [1, 'py']  
+
+30. Списки. Что выведет данный код?
+a=[1]
+a.append("py")
+print(a)
 - [ ] [1, 'p', 'y']
-31 Как изменить формат вывода даты и времени?
+- [ ] ['py', 1]
+- [+] [1, 'py']
+- [ ] [1, 'p', 'y']
+
+31. Как изменить формат вывода даты и времени?
 - [ ] time_format()
 - [ ] strptime()
 - [+] strftime()
 - [ ] datetime_format()
 - [ ] date_format()
-32 Как добавить элемент в конец списка?
+
+32. Как добавить элемент в конец списка?
 - [ ] insert()
 - [ ] extend()
 - [+] append()
 - [ ] add()
 - [ ] push()
-33 Что будет выведено следующей программой:
-a = 7  
-b = 9  
-a, b = b, a  
-print(a, b, a)  
-- [ ] 16916  
-- [ ] 999  
-- [ ] 979  
-- [ ] 777  
+
+33. Что будет выведено следующей программой:
+a = 7
+b = 9
+a, b = b, a
+print(a, b, a)
+- [ ] 16916
+- [ ] 999
+- [ ] 979
+- [ ] 777
 - [+] 797
-34 Как создать новый каталог в Python 3?
+
+34. Оператор continue используется
+- [ ] в качестве пустого оператора
+- [+] для перехода к следующей итерации цикла
+- [ ] для возврата из функции и продолжения программы с точки ее вызова
+- [ ] для выхода из цикла
+
+35. Как создать новый каталог в Python 3?
 - [ ] os.make_dir(dir_path)
 - [ ] os.add_dir(dir_path)
 - [+] os.mkdir(dir_path)
 - [ ] os.create_dir(dir_path)
 - [ ] os.newdir(dir_path)
-35 Что будет выведено на экран монитора в результате выполнения программы:
-z=5  
-z1=z**2  
+
+36. Что будет выведено на экран монитора в результате выполнения программы:
+z=5
+z1=z**2
 print(z1)
-- [ ] 125  
-- [ ] 10  
-- [ ] 5  
+- [ ] 125
+- [ ] 10
+- [ ] 5
 - [+] 25
-36 Что выведет данный код?
+
+37. Что выведет данный код?
 x='test'
 y=4
 print(y+x)
@@ -399,120 +438,641 @@ print(y+x)
 - [ ] testtesttesttest
 - [ ] ytest
 - [ ] testy
-37 Что выведет данный код?  
-for x in range(3):  
+
+38. Что выведет данный код?
+for x in range(3):
     print(x)
-- [ ] 3  
-- [ ] 0  
-- [ ] 2  
-- [+] 0  
-      1  
-      2  
-- [ ] 0  
-      1  
-      2  
+- [ ] 3
+- [ ] 0
+- [ ] 2
+- [+] 0
+      1
+      2
+- [ ] 0
+      1
+      2
       3
-38 Что выведет следующая программа (⟶ это отступ):
+
+39. Что выведет следующая программа:
 S = 0
 for i in range(1, 10, 2):
-⟶ if i % 2 == 0:
-⟶ ⟶ S = S + i
+    if i % 2 == 0:
+        S = S + i
 print(S)
-- [+] 0  
-- [ ] 1  
-- [ ] 10  
+- [+] 0
+- [ ] 1
+- [ ] 10
 - [ ] 20
-39 Выберите правильную запись оператора присваивания:
+
+40. Выберите правильную запись оператора присваивания:
 - [ ] 10 = x
 - [+] y = 7.8
 - [+] a = b + x
 - [+] a = 5
-40 Что будет в результате выполнения программы: Входные данные: a=10, b=20 (——> это отступ)?  
-a=int(input())  
-b=int(input())  
-if a<b:  
-——> print(a)  
-else:  
-——> print(b)  
-- [ ] 30  
-- [ ] -10  
-- [ ] 20  
+
+41. Что будет в результате выполнения программы (входные данные: a=10, b=20):
+a=int(input())
+b=int(input())
+if a<b:
+    print(a)
+else:
+    print(b)
+- [ ] 30
+- [ ] -10
+- [ ] 20
 - [+] 10
-41 Списки. Что выведет данный код?  
-a=[5, 10, 2, 0]  
-a.sort()  
-print(a)  
-- [ ] 10  
-- [ ] [10, 5, 2, 0]  
-- [ ] 17  
-- [ ] 0  
+
+42. Списки. Что выведет данный код?
+a=[5, 10, 2, 0]
+a.sort()
+print(a)
+- [ ] 10
+- [ ] [10, 5, 2, 0]
+- [ ] 17
+- [ ] 0
 - [+] [0, 2, 5, 10]
-42 Что выведет данный код?  
-a="spam"  
-print(a[2])  
-- [ ] 5  
-- [ ] p  
-- [ ] sp  
-- [ ] spam  
+
+43. Что выведет данный код?
+a="spam"
+print(a[2])
+- [ ] 5
+- [ ] p
+- [ ] sp
+- [ ] spam
 - [+] a
-43 Какой метод класса QWidget используется для отображения виджета на экране?
+
+44. Какой метод класса QWidget используется для отображения виджета на экране?
 - [ ] paint()
 - [ ] display()
 - [ ] render()
 - [+] show()
-44 Что выведет данный код?  
-a="spam"  
-print(a[-3])  
-- [ ] spa  
-- [+] p  
-- [ ] s  
-- [ ] pam  
+
+45. Что выведет данный код?
+a="spam"
+print(a[-3])
+- [ ] spa
+- [+] p
+- [ ] s
+- [ ] pam
 - [ ] a
-45 Как удалить пробелы в начале и в конце строки?
+
+46. Как удалить пробелы в начале и в конце строки?
 - [ ] str.out()
 - [ ] str.trim()
 - [ ] str.erase()
 - [+] str.strip()
 - [ ] str.clean()
-46 Словари. Что выведет данный код?  
-a={1: 2}  
-print(a[1])  
-- [ ] 12  
-- [ ] 3  
-- [ ] 1  
-- [+] 2  
+
+47. Словари. Что выведет данный код?
+a={1: 2}
+print(a[1])
 - [ ] 12
-47 Переменная float:
+- [ ] 3
+- [ ] 1
+- [+] 2
+- [ ] 12
+
+48. Переменная float:
 - [+] вещественная переменная
 - [ ] логическая переменная
 - [ ] целая переменная
-48 Множества. Что выведет данный код?  
-a=[1, 2, 1, 1]  
-print(set(a))  
-- [+] {1, 2}  
-- [ ] {1, 2, 1, 1}  
-- [ ] 1211  
-- [ ] 5  
-- [ ] 4
-49 Кортежи. Что выведет данный код? (——> это отступ)
+
+49. Кортежи. Что выведет данный код?
 for i in tuple([1, 2]):
-——> print(i, end="")
+    print(i, end="")
 else:
-——> print(0)
+    print(0)
 - [ ] 12
 - [ ] 0
 - [+] 120
 - [ ] 2
-50 Какого типа значение получится в результате вычисления следующего выражения:  
-( ' ', )
-- [+] tuple (кортеж)  
-- [ ] это синтаксическая ошибка  
-- [ ] str (строка)  
+
+50. Какого типа значение получится в результате вычисления следующего выражения: ( ' ', )
+- [+] tuple (кортеж)
+- [ ] это синтаксическая ошибка
+- [ ] str (строка)
 - [ ] unicode (Unicode-строка)
+
+51. Что выведет данный код?
+Ist = [x for x in range(2)]
+print(Ist)
+- [ ] 2
+- [ ] 1
+- [ ] 0
+- [+] [0, 1]
+- [ ] 1.2
+
+52. Что будет в результате выполнения следующего действия print(23 % 3)
+- [+] 2
+- [ ] 1
+- [ ] 1900-01-07 15:59:02
+- [ ] 7.666666666666667
+- [ ] 8
+
+53. Что выведет данный код?
+a=0
+while a<5:
+    a+=1
+print(a)
+- [ ] 6
+- [ ] 7
+- [ ] 0
+- [ ] 1
+- [+] 5
+
+54. Что выведет данный код?
+while 0:
+    print(1)
+    break
+else:
+    print(0)
+- [ ] 1 0
+- [+] 0
+- [ ] 1
+- [ ] 10
+
+55. Как заменить все вхождения подстроки в строке?
+- [ ] str.modify(substring, new_string)
+- [ ] str.change(substring, new_string)
+- [ ] str.substitute(substring, new_string)
+- [ ] str.swap(substring, new_string)
+- [+] str.replace(substring, new_string)
+
+56. Что выведет данный код?
+for i in "Jhon":
+    if i=='o':
+        continue
+    print(i, end=', ')
+- [ ] ….
+- [ ] J,h,n,
+- [ ] J,h,o,n,
+- [ ] o,
+- [+] J, h, n,
+
+57. Что будет результатом этого кода?
+x = 23
+num = 0 if x > 10 else 11
+print(num)
+- [ ] 11
+- [ ] 23
+- [ ] 10
+- [+] 0
+- [ ] Ошибка
+
+58. Как получить данные от пользователя?
+- [ ] Использовать метод cin()
+- [+] Использовать метод input()
+- [ ] Использовать метод get()
+- [ ] Использовать метод read()
+
+59. Результатом вычисления print(23 // 3) будет число:
+- [+] 7
+- [ ] 2
+- [ ] 7.666666666666667
+- [ ] 8
+- [ ] 7.666
+
+60. Оператор break используется:
+- [ ] для перехода к следующей итерации цикла
+- [ ] в качестве пустого оператора
+- [ ] для возврата из функции и продолжения программы с точки ее вызова
+- [+] для выхода из цикла
+- [ ] прерывания выполнения условного оператора if
+
+61. Что выведет данный код?
+x=2 if (10<5) else 3
+print(x)
+- [ ] 10
+- [ ] 2
+- [ ] 20
+- [+] 3
+- [ ] 5
+
+62. Что будет выведено следующей программой:
+a = "A"
+b = "B"
+b = a + b + a
+print(a + b)
+- [ ] BBA
+- [ ] BBAB
+- [ ] BABA
+- [ ] AABA
+- [+] ABAB
+
+63. Что делает функция len()?
+- [ ] Возвращает номер символа
+- [ ] Возвращает случайное число
+- [ ] Возвращает модуль числа
+- [+] Возвращает длину строки
+
+64. Какой метод используется для запуска основного цикла приложения в PyQt5?
+- [ ] execute()
+- [+] exec()
+- [ ] run()
+- [ ] start()
+
+65. Укажите корректный синтаксис открытия файла
+- [ ] myFile=open/mbox.txt
+- [ ] myFile=open(mbox.txt)
+- [ ] myFile=open[mbox.txt]
+- [+] myFile=open('mbox.txt')
+
+66. Каков тип переменной x
+myFile=open('mbox.txt')
+x=myFile.read()
+- [ ] список строк
+- [ ] список символов
+- [+] строка
+- [ ] массив строк
+
+67. С помощью какой функции можно организовать цикл с параметром (for)?
+- [ ] reload()
+- [ ] id()
+- [+] range()
+
+68. Что выведет следующая программа:
+S = 0
+for i in range(10, 2, -1):
+    if i % 2 == 0:
+        S = S + i
+print(S)
+- [+] 28
+- [ ] 0
+- [ ] 30
+- [ ] 20
+
+69. Списки. Что выведет данный код?
+a=[1, 2, 5, 7, 10]
+if a.count(5):
+    print(1)
+else:
+    print(a)
+- [ ] [1, 2, 5, 7, 10]
+- [ ] 5
+- [ ] 2
+- [ ] 10
+- [+] 1
+
+70. Что будет выведено следующей программой:
+A = B = 1
+a = "B" * 2
+b = "A" * 2
+a = a + b * 2
+print(a, b)
+- [ ] ВБАААА АА
+- [ ] 6 2
+- [ ] ААВВВВВ ВВ
+- [ ] 12
+- [+] ААВВВВ ВВ
+
+71. Укажите, сколько раз выполнится тело цикла с данным заголовком:
+i=1
+while i<=10:
+    i=i+1
+- [ ] 1
+- [+] 10
+- [ ] бесконечно долго
+- [ ] 11
+
+72. Укажите параметр метода sort(), задающий сортировку в порядке убывания
+- [ ] reverse=False
+- [ ] False
+- [+] reverse=True
+- [ ] True
+
+73. a = 345. Что выведет команда print(a//100)
+- [ ] 3.45
+- [+] 3
+- [ ] 345
+- [ ] 100
+
+74. Как объединить список строк в одну строку?
+- [ ] str.combine(list)
+- [+] str.join(list)
+- [ ] str.merge(list)
+- [ ] str.append(list)
+- [ ] str.concatenate(list)
+
+75. Списки. Что выведет данный код?
+a=[1, 1, 2, 5, 1]
+a.remove(1)
+print(a)
+- [ ] [2, 5]
+- [+] [1, 2, 5, 1]
+- [ ] [1, 1, 2, 5]
+- [ ] [1, 1, 1]
+- [ ] 3
+
+76. Кортежи. Что выведет данный код?
+x=tuple((1: 2))
+print(x)
+- [ ] (1,)
+- [+] ошибку
+- [ ] (1: 2)
+- [ ] (1, 2)
+
+77. Что такое класс?
+- [ ] это список с атрибутами
+- [+] это пользовательский тип, состоящий из методов и атрибутов
+- [ ] в python нет классов
+- [ ] это массив с атрибутами
+
+78. Что выведет данный код?
+a=True
+while a:
+    a=1
+print(a)
+- [ ] 0
+- [ ] True
+- [ ] -1
+- [ ] 2
+- [+] 1
+
+79. Что будет в результате выполнения следующего действия print(5 / 2)
+- [+] 2.5
+- [ ] 10
+- [ ] 2
+- [ ] 1
+
+80. Что выведет данный код?
+for x in range(2):
+    continue
+print(x)
+- [ ] 0
+- [ ] 1
+- [ ] 2
+- [ ] 3
+- [+] 1
+
+81. Кортежи. Что выведет данный код?
+a=(0)
+print(bool(a))
+- [ ] Ошибку
+- [ ] False
+- [+] True
+- [ ] Ничего
+
+82. Как удалить файл в Python 3?
+- [ ] os.del(file_path)
+- [ ] os.delete(file_path)
+- [+] os.unlink(file_path)
+- [ ] os.erase(file_path)
+
+83. Встроенный метод списка pop(x) используется для:
+- [+] извлечения элемента списка по указанному индексу
+- [ ] добавления нового элемента списка в начало списка
+- [ ] получения индекса элемента по его значению
+- [ ] извлечения элемента списка с указанным значением
+- [ ] добавление нового элемента списка в конец списка
+
+84. Что будет получено в результате вычисления следующего выражения: (0 < 5 <= 3) and (0 / 0)
+- [ ] будет возбуждено исключение ZeroDivisionError (деление на нуль)
+- [+] False (или 0)
+- [ ] True (или 1)
+- [ ] синтаксическая ошибка
+
+85. Как удалить ключ из словаря?
+- [ ] dict.remove(key)
+- [ ] remove(dict, key)
+- [+] del dict[key]
+- [ ] clear(dict, key)
+- [ ] pop(dict, key)
+
+86. Конструктор класса задается методом с именем:
+- [ ] __construct__
+- [ ] __new__
+- [ ] new
+- [+] __init__
+- [ ] init
+
+87. Списки. Что выведет данный код?
+a=[2, 3]
+a.insert(-2,1)
+print(a)
+- [ ] [1, 2, 3]
+- [ ] [2, 2, 3]
+- [+] [2, 1, 3]
+- [ ] [1, 3]
+- [ ] [2, 3, -2, 1]
+
+88. Тело цикла - это...
+- [ ] произвольная группа команд
+- [ ] произвольный текст
+- [ ] группа команд, не входящих в циклическую структуру
+- [+] группа команд, повторяющихся некоторое число раз
+
+89. Что выведет данный код?
+for i in "Jhon":
+    if i=='o':
+        break
+    print(i, end=', ')
+- [ ] J, h, o, n,
+- [ ] J, h, n,
+- [ ] 1
+- [+] J, h,
+- [ ] o,
+
+90. Что будет выведено следующей программой:
+a = [5, 3, 8]
+a[1] = a[2:3]
+print(a[1])
+- [ ] [3, 8]
+- [ ] 8
+- [+] [8]
+- [ ] 7
+- [ ] [7]
+
+91. Кортежи. Что выведет данный код?
+a=((1), (2))
+print(a)
+- [ ] 3
+- [+] (1, 2)
+- [ ] ((1), (2))
+- [ ] Ошибку
+
+92. Если говорят, что программа "зациклилась", то это значит...
+- [ ] тело цикла выполняется только один раз
+- [+] тело цикла выполняется бесконечно долго
+- [ ] тело цикла не выполняется
+
+93. Сколько элементов будет содержать список L (то есть, чему будет равно len(L)) после выполнения следующего кода:
+L = []
+L.extend([1,2,3])
+L.insert(1, 'abc')
+- [ ] 3
+- [ ] приведёт к ошибке
+- [ ] 3
+- [+] 4
+
+94. Списки. Что выведет данный код?
+a=[2, 3]
+a.insert(1, 1)
+print(a)
+- [ ] [1, 4]
+- [ ] [2, 3, 2, 1]
+- [ ] [2, 2, 3]
+- [ ] [1, 2, 3]
+- [+] [2, 1, 3]
+
+95. Какого типа значение получится в результате вычисления следующего выражения: [^]
+- [ ] array (массив)
+- [ ] list (список)
+- [+] это синтаксическая ошибка
+- [ ] str (строка)
+
+96. Встроенный метод списка index() используется для:
+- [ ] получения индекса последнего элемента списка с указанным значением
+- [ ] извлечения первого элемента списка с указанным значением
+- [ ] получения расчетов элемента списка по индексу
+- [+] получения индекса первого элемента списка с указанным значением
+- [ ] получения списка индексов элементов списка с указанным значением
+
+97. Как проверить существование файла в Python 3?
+- [ ] os.access(file_path)
+- [ ] os.extract(file_path)
+- [ ] os.init(effic_path)
+- [ ] os.check(file_path)
+- [+] os.path.exists(file_path)
+
+98. Что выведет данный код?
+a=0
+while a!=5:
+    a+=1
+print(a)
+- [+] 5
+- [ ] 1
+- [ ] 6
+- [ ] 8
+- [ ] 4
+
+99. Как получить длину списка?
+- [ ] count()
+- [ ] list_size()
+- [+] len()
+- [ ] length()
+- [ ] size()
+
+100. Что будет выведено следующей программой:
+a = "A"
+b = "B"
+b = a + b + a
+print(a + b)
+- [ ] BBA
+- [ ] BABA
+- [ ] BBAB
+- [+] ABAB
+- [ ] AABA
+
+101. Кортежи. Что выведет данный код?
+a=("0011")
+print(int(a))
+- [ ] 1
+- [+] 11
+- [ ] 011
+- [ ] 0011
+
+102. Списки. Что выведет данный код?
+a=[1, 1]
+a.insert(1,2)
+print(a)
+- [ ] [1, 1, 1, 2]
+- [ ] [1, 2]
+- [ ] [1, 1]
+- [+] [1, 2, 1]
+- [ ] [1, 2, 1, 1]
+
+103. Что будет получено в результате вычисления следующего выражения: print((0 < [1, 4][1] < 3) + 1)
+- [ ] 2
+- [ ] 0
+- [+] 1
+- [ ] это синтаксическая ошибка
+
+104. Списки. Что выведет данный код?
+a=[2, 4, 8]
+print(a[-2])
+- [+] 4
+- [ ] -4
+- [ ] 2
+- [ ] [4, 8]
+- [ ] [2, 4]
+
+105. Словари. Что выведет данный код?
+a={1: 2}
+for i in a:
+    print(a)
+- [ ] 2
+- [ ] (1: 2)
+- [ ] 3
+- [ ] 1
+- [+] {1: 2}
+
+106. Как создать объект datetime с текущей датой и временем?
+- [ ] datetime.current_time()
+- [ ] datetime.current_datetime()
+- [ ] datetime.today()
+- [+] datetime.now()
+- [ ] datetime.current()
+
+107. При наследовании в языке Python:
+- [ ] подклассы наследуют все методы суперкласса, кроме специально помеченных
+- [+] подклассы наследуют все методы суперкласса
+- [ ] подклассы наследуют только специально помеченные методы суперкласса
+- [ ] методы в языке Python не наследуются
+
+108. Что будет в результате выполнения программы (входные данные: a=20, b=10):
+a=int(input())
+b=int(input())
+if a>=b:
+    print(a)
+else:
+    print(b)
+- [ ] 30
+- [+] 20
+- [ ] 10
+- [ ] -10
+
+109. Что выведет данный код?
+a='span'
+print(a[2])
+- [ ] s
+- [ ] span
+- [ ] p
+- [+] a
+
+110. Что выведет следующая программа:
+S = 0
+for i in range(1, 10):
+    for j in range(1, 3):
+        if i == j:
+            S = S + i + j
+            break
+print(S)
+- [ ] 12
+- [ ] 0
+- [ ] 2
+- [+] 6
+
+111. Оператор return используется:
+- [ ] для выхода из цикла
+- [ ] в качестве пустого оператора
+- [+] для возврата из функции и продолжения программы с точки ее вызова
+- [ ] прерывания выполнения условного оператора if
+- [ ] для перехода к следующей итерации цикла
+
+112. Что выведет данный код?
+while True:
+    print(1)
+    break
+else:
+    print(0)
+- [+] 1
+- [ ] Ошибку
+- [ ] 1.0
+- [ ] 0
 `;
 
     // —————————————————————————————————————
-    // ПАРСЕР ВОПРОСОВ
+    // ПАРСЕР И ЛОГИКА
     // —————————————————————————————————————
     function parseQuestions(text) {
       const lines = text.trim().split('\n');
@@ -523,140 +1083,155 @@ else:
         line = line.trim();
         if (!line) continue;
 
-        if (/^\d+\s/.test(line)) {
+        if (/^\d+\./.test(line)) {
           if (current) questions.push(current);
           const idxEnd = line.indexOf(' ');
           const qText = line.slice(idxEnd).trim();
-          current = { text: qText, options: [], correctIndices: [] };
-        } else if (line.startsWith('- [+]') || line.startsWith('- [ ]')) {
-          const isCorrect = line.startsWith('- [+]');
-          const cleanLine = line.replace(/^- \[[+\] ]\]/, '').trim();
+          current = { text: qText, options: [], correct: null };
+        } else if (line.startsWith('- [+]')) {
+          const opt = line.replace('- [+] ', '').trim();
           if (current) {
-            const index = current.options.length;
-            current.options.push(cleanLine);
-            if (isCorrect) {
-              current.correctIndices.push(index);
-            }
+            current.options.push(opt);
+            current.correct = current.options.length - 1;
           }
-        } else if (current && current.options.length === 0 && !line.startsWith('-')) {
+        } else if (line.startsWith('- [ ]')) {
+          const opt = line.replace('- [ ] ', '').trim();
+          if (current) current.options.push(opt);
+        } else if (current && !line.startsWith('-') && !/^\d+\./.test(line)) {
           current.text += '\n' + line;
         }
       }
       if (current) questions.push(current);
-      return questions.filter(q => q.correctIndices.length > 0 && q.options.length > 0);
+      return questions.filter(q => q.correct !== null && q.options.length > 0);
     }
 
     const allQuestions = parseQuestions(rawText);
+    let currentQuiz = [];
+    let currentIndex = 0;
+    let score = 0;
+    let userAnswered = false;
+    let userAnswers = []; // [{ question, selected, correct }]
 
-    // —————————————————————————————————————
-    // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-    // —————————————————————————————————————
-    let selectedQuestions = [];
-    let currentQuestionIndex = 0;
-    let correctAnswers = 0;
-    let userAnswers = [];
-    let autoAdvanceTimer = null;
-
-    // —————————————————————————————————————
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // —————————————————————————————————————
     function shuffle(array) {
       return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function shuffleWithOptions(options, correctIndex) {
+      const mapped = options.map((text, i) => ({
+        text,
+        originalIndex: i,
+        isCorrect: i === correctIndex
+      }));
+      const shuffled = shuffle(mapped);
+      const newCorrect = shuffled.findIndex(i => i.isCorrect);
+      const newOptions = shuffled.map(i => i.text);
+      return { options: newOptions, correct: newCorrect, mapping: shuffled };
     }
 
     function startQuiz(type, count) {
       let selected = [];
       if (type === 'first') {
-        selected = shuffle(allQuestions.slice(0, Math.min(count, allQuestions.length)));
+        selected = allQuestions.slice(0, Math.min(count, allQuestions.length));
       } else {
-        selected = shuffle([...allQuestions]).slice(0, count);
+        selected = shuffle(allQuestions).slice(0, count);
       }
-
-      selectedQuestions = selected;
-      currentQuestionIndex = 0;
-      correctAnswers = 0;
-      userAnswers = new Array(selected.length).fill(false);
+      currentQuiz = selected;
+      currentIndex = 0;
+      score = 0;
+      userAnswered = false;
+      userAnswers = [];
 
       document.getElementById('setup').style.display = 'none';
-      document.getElementById('quiz').style.display = 'block';
+      document.getElementById('quiz-container').style.display = 'block';
       document.getElementById('result').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
 
       showQuestion();
     }
 
     function showQuestion() {
-      if (currentQuestionIndex >= selectedQuestions.length) {
+      if (currentIndex >= currentQuiz.length) {
         showResult();
         return;
       }
 
-      clearInterval(autoAdvanceTimer);
-      document.getElementById('next-btn').style.display = 'none';
-
-      const q = selectedQuestions[currentQuestionIndex];
-      const container = document.getElementById('question-container');
-      container.innerHTML = `
-        <div class="question">
-          <div class="question-title">${currentQuestionIndex + 1}. ${q.text}</div>
-          <div class="options"></div>
-        </div>
-      `;
-
+      const q = currentQuiz[currentIndex];
+      const shuffled = shuffleWithOptions(q.options, q.correct);
+      const container = document.getElementById('current-question');
+      container.innerHTML = `<div class="question-title">${currentIndex + 1}. ${q.text}</div><div class="options"></div>`;
       const opts = container.querySelector('.options');
-      const correctSet = new Set(q.correctIndices);
+      userAnswered = false;
 
-      q.options.forEach((opt, i) => {
-        const el = document.createElement('div');
-        el.className = 'option';
-        el.textContent = opt;
-        el.onclick = () => {
-          if (userAnswers[currentQuestionIndex]) return;
-
-          // Подсветка всех правильных
-          q.correctIndices.forEach(idx => {
-            opts.children[idx]?.classList.add('correct');
-          });
-
-          // Подсветка выбранного
-          if (correctSet.has(i)) {
-            el.classList.add('correct');
-            correctAnswers++;
-          } else {
-            el.classList.add('incorrect');
-          }
-
-          userAnswers[currentQuestionIndex] = true;
-          document.getElementById('next-btn').style.display = 'inline-block';
-
-          // Автопереход через 3 сек
-          autoAdvanceTimer = setTimeout(nextQuestion, 3000);
-        };
-        opts.appendChild(el);
+      shuffled.options.forEach((opt, i) => {
+        const optEl = document.createElement('div');
+        optEl.className = 'option';
+        optEl.textContent = opt;
+        optEl.onclick = () => handleAnswer(i, shuffled.correct, q, shuffled.mapping[i].originalIndex);
+        opts.appendChild(optEl);
       });
+
+      document.getElementById('next-btn').style.display = 'none';
+    }
+
+    function handleAnswer(selectedVisualIndex, actualCorrectIndex, originalQuestion, selectedOriginalIndex) {
+      if (userAnswered) return;
+      userAnswered = true;
+
+      const opts = document.querySelectorAll('.option');
+      opts.forEach((el, i) => {
+        el.classList.remove('correct', 'incorrect');
+        if (i === actualCorrectIndex) {
+          el.classList.add('correct');
+        } else if (i === selectedVisualIndex) {
+          el.classList.add('incorrect');
+        }
+      });
+
+      const isCorrect = (selectedVisualIndex === actualCorrectIndex);
+      if (isCorrect) score++;
+
+      // Сохраняем для обзора
+      userAnswers.push({
+        question: originalQuestion.text,
+        correctAnswer: originalQuestion.options[originalQuestion.correct],
+        userAnswer: originalQuestion.options[selectedOriginalIndex],
+        isCorrect: isCorrect
+      });
+
+      document.getElementById('next-btn').style.display = 'inline-block';
     }
 
     function nextQuestion() {
-      currentQuestionIndex++;
+      currentIndex++;
       showQuestion();
     }
 
     function showResult() {
-      document.getElementById('quiz').style.display = 'none';
-      const total = selectedQuestions.length;
-      const percent = Math.round((correctAnswers / total) * 100);
+      document.getElementById('quiz-container').style.display = 'none';
+      const resultDiv = document.getElementById('result');
+      resultDiv.style.display = 'block';
 
-      document.getElementById('score').textContent = correctAnswers;
-      document.getElementById('total').textContent = total;
-      document.getElementById('percent').textContent = percent;
+      let reviewHtml = '';
+      userAnswers.forEach((item, idx) => {
+        reviewHtml += `
+          <div class="review-item ${item.isCorrect ? '' : 'incorrect'}">
+            <div><b>Вопрос ${idx + 1}:</b> ${item.question}</div>
+            <div>Ваш ответ: <span style="color: ${item.isCorrect ? '#155724' : '#721c24'}">${item.userAnswer}</span></div>
+            <div>Правильный ответ: <span class="review-correct">${item.correctAnswer}</span></div>
+          </div>
+        `;
+      });
 
-      document.getElementById('result').style.display = 'block';
+      resultDiv.innerHTML = `
+        <h2>Тест завершён!</h2>
+        <p>Ваш результат: <b>${score}</b> из <b>${currentQuiz.length}</b></p>
+        <h3>Обзор ответов:</h3>
+        ${reviewHtml}
+        <div style="margin-top:20px;">
+          <button onclick="location.reload()">Пройти ещё раз</button>
+        </div>
+      `;
     }
-
-    // —————————————————————————————————————
-    // НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ
-    // —————————————————————————————————————
-    document.getElementById('next-btn').onclick = nextQuestion;
-    document.getElementById('finish-btn').onclick = showResult;
   </script>
 </body>
 </html>
